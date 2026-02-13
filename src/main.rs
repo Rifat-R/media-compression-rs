@@ -2,6 +2,8 @@ use eframe::egui;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::thread;
 
+const ALLOWED_FILETYPES: &[&str] = &["mp4", "mkv", "webp"];
+
 fn main() -> eframe::Result {
     let options = eframe::NativeOptions::default();
     eframe::run_native(
@@ -41,7 +43,7 @@ impl eframe::App for MyApp {
 
                 thread::spawn(move || {
                     let file = rfd::FileDialog::new()
-                        .add_filter("Video", &["mp4", "webp", "mkv"])
+                        .add_filter("Video", ALLOWED_FILETYPES)
                         .pick_file();
                     if let Some(path) = file {
                         let _ = sender.send(path.display().to_string());
