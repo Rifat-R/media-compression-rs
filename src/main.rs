@@ -1,6 +1,9 @@
 use eframe::egui;
+use std::path::Path;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::thread;
+
+use media_compression_rs::{CompressionFormat, compress_media};
 
 const ALLOWED_FILETYPES: &[&str] = &["mp4", "mkv", "webp"];
 
@@ -54,6 +57,29 @@ impl eframe::App for MyApp {
 
             if let Some(path) = &self.picked_path {
                 ui.label(format!("Selected: {}", path));
+                if ui.button("Compress").clicked() {
+                    let input_path_str = path.clone();
+                    // let output_path = format!("compressed_{}", path);
+                    thread::spawn(move || {
+                        let input_path = Path::new(&input_path_str);
+                        let parent = input_path.parent().unwrap_or(Path::new("."));
+
+                        let filename = input_path.file_name().unwrap();
+
+                        let new_filename = format!("compressed_{}", filename.to_string_lossy());
+
+                        let output_path_buf = parent.join(new_filename);
+
+                        let output_path_str = output_path_buf.to_string_lossy().to_string();
+
+                        // Run the compression
+                        let _ = compress_media(
+                            &input_path_str,
+                            &output_path_str,
+                            CompressionFormat::Mp4,
+                        );
+                    });
+                }
             }
         });
     }
