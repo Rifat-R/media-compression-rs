@@ -62,6 +62,17 @@ impl eframe::App for MyApp {
                     // let output_path = format!("compressed_{}", path);
                     thread::spawn(move || {
                         let input_path = Path::new(&input_path_str);
+                        let compression_format = input_path
+                            .extension()
+                            .and_then(|ext| ext.to_str())
+                            .map(|ext| match ext {
+                                "mkv" => CompressionFormat::Mkv,
+                                "mp4" => CompressionFormat::Mp4,
+                                "webp" => CompressionFormat::Webp,
+                                _ => panic!("Wrong format selected"),
+                            })
+                            .expect("File has no valid extension");
+
                         let parent = input_path.parent().unwrap_or(Path::new("."));
 
                         let filename = input_path.file_name().unwrap();
@@ -72,12 +83,8 @@ impl eframe::App for MyApp {
 
                         let output_path_str = output_path_buf.to_string_lossy().to_string();
 
-                        // Run the compression
-                        let _ = compress_media(
-                            &input_path_str,
-                            &output_path_str,
-                            CompressionFormat::Mp4,
-                        );
+                        let _ =
+                            compress_media(&input_path_str, &output_path_str, compression_format);
                     });
                 }
             }
