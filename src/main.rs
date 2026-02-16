@@ -1,4 +1,5 @@
 use eframe::egui;
+use eframe::egui::{Color32, RichText};
 use std::path::Path;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::thread;
@@ -56,7 +57,10 @@ impl eframe::App for MyApp {
             }
 
             if let Some(path) = &self.picked_path {
-                ui.label(format!("Selected: {}", path));
+                let label_text = RichText::new(format!("File Selected: {}", path))
+                    .color(Color32::LIGHT_GREEN)
+                    .size(16.0);
+                ui.label(label_text);
                 if ui.button("Compress").clicked() {
                     let input_path_str = path.clone();
                     // let output_path = format!("compressed_{}", path);
@@ -74,14 +78,12 @@ impl eframe::App for MyApp {
                             .expect("File has no valid extension");
 
                         let parent = input_path.parent().unwrap_or(Path::new("."));
-
                         let filename = input_path.file_name().unwrap();
 
                         let new_filename = format!("compressed_{}", filename.to_string_lossy());
 
-                        let output_path_buf = parent.join(new_filename);
-
-                        let output_path_str = output_path_buf.to_string_lossy().to_string();
+                        let output_path_str =
+                            parent.join(new_filename).to_string_lossy().to_string();
 
                         let _ =
                             compress_media(&input_path_str, &output_path_str, compression_format);
